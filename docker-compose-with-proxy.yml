@@ -1,0 +1,70 @@
+version: '3'
+services:
+  webmodx:
+    build: ./apache
+    links:
+      - 'dbmodx:mysql'
+    ports:
+      - '80'
+    environment:
+      MODX_VERSION: 2.8.1
+      MODX_DB_HOST: 'mysql:3306'
+      MODX_DB_PASSWORD: modx
+      MODX_DB_USER: modx
+      MODX_DB_NAME: modx
+    volumes:
+      - './html:/var/www/html'
+    labels:
+        - "traefik.enable=true"
+        - "traefik.http.routers.webmodx.rule=Host(`modx.localhost`)"
+        - "traefik.http.routers.webmodx.entrypoints=web"
+        - "traefik.http.services.webmodx.loadbalancer.server.port=80"
+        - "traefik.docker.network=proxy"
+    networks:
+      - proxy
+      - internal
+
+  dbmodx:
+    image: 'mysql:5.7'
+    environment:
+      MYSQL_ROOT_PASSWORD: mysql
+      MYSQL_DATABASE: modx
+      MYSQL_USER: modx
+      MYSQL_PASSWORD: modx
+    ports:
+      - '3306'
+    command: mysqld --sql-mode=NO_ENGINE_SUBSTITUTION
+    volumes:
+      - './mysql:/var/lib/mysql'
+    networks:
+      - proxy
+      - internal
+
+  phpmyadminmodx:
+    image: phpmyadmin/phpmyadmin
+    ports:
+      - 80
+    links:
+      - 'dbmodx:mysql'
+    environment:
+      - PMA_HOST=mysql:3306
+      - PMA_USER=modx
+      - PMA_PASSWORD=modx
+      - UPLOAD_LIMIT=30000000
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.dbmodx.rule=Host(`dbmodx.localhost`)"
+      - "traefik.http.routers.dbmodx.entrypoints=web"
+      - "traefik.http.services.dbmodx.loadbalancer.server.port=80"
+      - "traefik.docker.network=proxy"
+    networks:
+      - proxy
+      - internal
+
+networks:
+  proxy:
+    external:
+      name: proxy
+  internal:
+    driver: bridge
+
