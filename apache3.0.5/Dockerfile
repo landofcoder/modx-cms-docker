@@ -1,4 +1,4 @@
-FROM php:7.4.8-apache
+FROM php:8.3-apache
 
 LABEL authors="Landofcoder <landofcoder@gmail.com> (@vh)"
 
@@ -27,12 +27,12 @@ RUN { \
 
 VOLUME /var/www/html
 
-ENV MODX_VERSION=2.8.1
-ENV MODX_SHA1=c79f7399b6cb2a7508852f2e82821a0d5670ef41f
+ENV MODX_VERSION=3.0.5
+ENV MODX_SHA1=c8abde97ab72be7472549270e9af65d9d959062e
 
 # upstream tarballs include ./modx-${MODX_VERSION}/
 RUN curl -o modx.zip -SL http://modx.com/download/direct/modx-${MODX_VERSION}-pl.zip \
-	#&& echo "$MODX_SHA1 *modx.zip" | sha1sum -c - \
+	&& echo "$MODX_SHA1 *modx.zip" | sha1sum -c - \
 	&& unzip modx.zip -d /usr/src \
   && mv /usr/src/modx-${MODX_VERSION}-pl /usr/src/modx \
   && find /usr/src/modx -name 'ht.access' -exec bash -c 'mv $0 ${0/ht.access/.htaccess}' {} \; \
