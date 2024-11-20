@@ -1,0 +1,41 @@
+version: '3'
+services:
+  webmodx:
+    build: ./apache
+    links:
+      - 'dbmodx:mysql'
+    ports:
+      - '8000:80'
+    environment:
+      MODX_VERSION: 2.8.1
+      MODX_DB_HOST: 'mysql:3306'
+      MODX_DB_PASSWORD: modx
+      MODX_DB_USER: modx
+      MODX_DB_NAME: modx
+    volumes:
+      - './html:/var/www/html'
+
+  dbmodx:
+    image: 'mysql:5.7'
+    environment:
+      MYSQL_ROOT_PASSWORD: 'mysql:3306'
+      MYSQL_DATABASE: modx
+      MYSQL_USER: modx
+      MYSQL_PASSWORD: modx
+    ports:
+      - '3306:3306'
+    command: mysqld --sql-mode=NO_ENGINE_SUBSTITUTION
+    volumes:
+      - './mysql:/var/lib/mysql'
+
+  phpmyadminmodx:
+    image: phpmyadmin/phpmyadmin
+    ports:
+      - 8800:80
+    links:
+      - 'dbmodx:mysql'
+    environment:
+      - PMA_HOST=mysql:3306
+      - PMA_USER=modx
+      - PMA_PASSWORD=modx
+      - UPLOAD_LIMIT=30000000
